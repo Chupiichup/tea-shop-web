@@ -3,55 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chu tea - Shop trà nhỏ giữa lòng thành phố to</title>
+    <meta name="description" content="Chu Leaf - Cửa hàng trà nghệ nhân, mang đến trải nghiệm trà giản dị, tinh tế giữa lòng phố thị. Mua trà xanh, trà đen, trà ô long chất lượng cao.">
+    <meta name="keywords" content="chuleaf, tea, greentea, blacktea, oolong, shan tea, trà, flavor tea, trà xanh, trà đen, trà trắng, trà ô long, phổ nhĩ, hoàng trà, lục trà, bạch trà, hồng trà, cửa hàng trà, chuleaf, trà nghệ nhân, trà shan tuyết, trà tà xùa, trà hà giang, trà thái nguyên">
+    <meta name="author" content="Chu Leaf">
+    <title>Chu Leaf - Cửa Hàng Trà Nghệ Nhân</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700&family=Roboto:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Header -->
     <header>
+        <div class="cart-icon">
+            <a href="cart.html"><img src="cart-icon.png" alt="Cart" width="30"></a>
+            <span id="cart-count">0</span>
+        </div>
         <h1>Chu Leaf</h1>
         <nav>
             <ul>
                 <li><a href="#home">Trang chủ</a></li>
                 <li><a href="#about">Giới thiệu</a></li>
-                <li><a href="#collections">Sản phẩm</a></li>
+                <li><a href="#products">Sản phẩm</a></li>
                 <li><a href="#contact">Liên hệ</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- Giới thiệu về shop -->
-    <section id="about">
+    <section id="home" class="hero">
         <h2>Shop trà nhỏ giữa lòng phố thị</h2>
         <p>Những ngày phố mệt, về nhâm nhi một chén trà nghệ nhân. Một chiếc shop nhỏ, dẫn bạn đến với trà giản dị thôi.</p>
+        <a href="#products" class="cta-button">Khám phá ngay</a>
     </section>
 
-    <!-- Các loại trà -->
-    <section id="collections">
-        <h2>Các loại trà</h2>
+    <section id="products" class="collection">
+        <h2>Trà mộc nguyên bản</h2>
         <div class="collection-grid">
             <div class="collection-item">
-                <a href="collections/green-tea.html">
-                    <img src="images/green-tea.jpg" alt="Trà xanh">
-                    <h3>Trà xanh</h3>
-                </a>
+                <img src="tea-green.jpg" alt="Trà xanh">
+                <h3>Trà xanh</h3>
+                <p>Hương vị tươi mát, tinh khiết từ những búp trà non.</p>
+                <a href="product-green.html" class="cta-button">Mua ngay</a>
             </div>
             <div class="collection-item">
-                <a href="collections/black-tea.html">
-                    <img src="images/black-tea.jpg" alt="Trà đen">
-                    <h3>Trà đen</h3>
-                </a>
+                <img src="tea-black.jpg" alt="Trà đen">
+                <h3>Trà đen</h3>
+                <p>Đậm đà, quyến rũ với hậu vị ngọt ngào.</p>
+                <a href="product-black.html" class="cta-button">Mua ngay</a>
             </div>
             <div class="collection-item">
-                <a href="collections/oolong-tea.html">
-                    <img src="images/oolong-tea.jpg" alt="Trà ô long">
-                    <h3>Trà ô long</h3>
-                </a>
+                <img src="tea-oolong.jpg" alt="Trà ô long">
+                <h3>Trà ô long</h3>
+                <p>Hương thơm thanh tao, vị trà cân bằng hoàn hảo.</p>
+                <a href="product-oolong.html" class="cta-button">Mua ngay</a>
+            </div>
+            <div class="collection-item">
+                <img src="tea-black.jpg" alt="Trà đen">
+                <h3>Trà đen</h3>
+                <p>Đậm đà, quyến rũ với hậu vị ngọt ngào.</p>
+                <a href="product-black.html" class="cta-button">Mua ngay</a>
+            </div>
+            <div class="collection-item">
+                <img src="tea-black.jpg" alt="Trà đen">
+                <h3>Trà đen</h3>
+                <p>Đậm đà, quyến rũ với hậu vị ngọt ngào.</p>
+                <a href="product-black.html" class="cta-button">Mua ngay</a>
+            </div>
+            <div class="collection-item">
+                <img src="tea-black.jpg" alt="Trà đen">
+                <h3>Trà đen</h3>
+                <p>Đậm đà, quyến rũ với hậu vị ngọt ngào.</p>
+                <a href="product-black.html" class="cta-button">Mua ngay</a>
+            </div>                                    
+        </div>
+    </section>
+
+    <section id="products" class="collection">
+        <h2>Trà ướp hương</h2>
+        <div class="collection-grid">
+            <div class="collection-item">
+                <img src="tea-green.jpg" alt="Trà xanh">
+                <h3>Trà hương Dành dành</h3>
+                <p>Hương vị tươi mát, tinh khiết từ những búp trà non.</p>
+                <a href="product-green.html" class="cta-button">Mua ngay</a>
+            </div>
+            <div class="collection-item">
+                <img src="tea-black.jpg" alt="Trà đen">
+                <h3>Trà hương Ngọc lan</h3>
+                <p>Đậm đà, quyến rũ với hậu vị ngọt ngào.</p>
+                <a href="product-black.html" class="cta-button">Mua ngay</a>
+            </div>
+            <div class="collection-item">
+                <img src="tea-oolong.jpg" alt="Trà ô long">
+                <h3>Trà hương Sen</h3>
+                <p>Hương thơm thanh tao, vị trà cân bằng hoàn hảo.</p>
+                <a href="product-oolong.html" class="cta-button">Mua ngay</a>
+            </div>
+            <div class="collection-item">
+                <img src="tea-green.jpg" alt="Trà xanh">
+                <h3>Trà hương Dành dành</h3>
+                <p>Hương vị tươi mát, tinh khiết từ những búp trà non.</p>
+                <a href="product-green.html" class="cta-button">Mua ngay</a>
+            </div>
+            <div class="collection-item">
+                <img src="tea-green.jpg" alt="Trà xanh">
+                <h3>Trà hương Dành dành</h3>
+                <p>Hương vị tươi mát, tinh khiết từ những búp trà non.</p>
+                <a href="product-green.html" class="cta-button">Mua ngay</a>
+            </div>
+            <div class="collection-item">
+                <img src="tea-green.jpg" alt="Trà xanh">
+                <h3>Trà hương Dành dành</h3>
+                <p>Hương vị tươi mát, tinh khiết từ những búp trà non.</p>
+                <a href="product-green.html" class="cta-button">Mua ngay</a>
             </div>
         </div>
     </section>
 
-    <!-- Đăng ký nhận newsletter -->
     <section id="newsletter">
         <h2>Đăng ký nhận tin</h2>
         <p>Nhận thông tin về các sản phẩm mới và ưu đãi đặc biệt!</p>
@@ -61,19 +126,17 @@
         </form>
     </section>
 
-    <!-- Liên hệ và mạng xã hội -->
     <section id="contact">
         <h2>Liên hệ</h2>
-        <p>Liên hệ với chúng tôi qua: <a href="mailto:teashop@example.com">teashop@example.com</a></p>
+        <p>Liên hệ với chúng tôi qua: <a href="mailto:teashop@chuleaf.com">teashop@chuleaf.com</a></p>
         <div class="social-links">
-            <a href="https://facebook.com" target="_blank">Facebook</a>
-            <a href="https://instagram.com" target="_blank">Instagram</a>
+            <a href="https://facebook.com/chuleaf" target="_blank">Facebook</a>
+            <a href="https://instagram.com/chuleaf" target="_blank">Instagram</a>
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
-        <p>© 2025 Tea Shop. All rights reserved.</p>
+        <p>&copy; 2025 Chu Leaf. All rights reserved.</p>
     </footer>
 
     <script src="script.js"></script>
