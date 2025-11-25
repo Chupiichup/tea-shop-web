@@ -79,7 +79,7 @@ export const CATEGORIES: Category[] = [
     id: 'tra-nguyen-ban', 
     title: 'Trà Mộc', 
     description: 'Hương vị trà mộc mạc từ những đồi cao nguyên.',
-    image: 'https://drive.usercontent.google.com/download?id=1tmGFJQmb6jF00TN_588T3JPZmreZo72-&export=view&authuser=0?q=80&w=800&auto=format&fit=crop', // Updated stable image
+    image: '/images/tra-moc-bg.png',
     link: '#tra-nguyen-ban',
   },
   {
