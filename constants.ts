@@ -86,22 +86,50 @@ export const CATEGORIES: Category[] = [
     id: 'tra-uop-huong', 
     title: 'Trà Ướp Hương',
     description: 'Sự hòa quyện tinh tế giữa trà và những mùa hoa quả.',
-    image: 'https://images.unsplash.com/photo-1563911892437-1feda0179e1b?q=80&w=800&auto=format&fit=crop',
+    image: '/images/tra-uop-huong.png',
     link: '#tra-uop-huong',
   },
   {
     id: 'tra-cu', 
     title: 'Trà Cụ & Phụ Kiện',
     description: 'Dụng cụ thưởng trà tinh xảo, nâng tầm nghệ thuật.',
-    image: 'https://images.unsplash.com/photo-1633519128522-835698b67160?q=80&w=800&auto=format&fit=crop',
+    image: '/images/tra-cu.jpg',
     link: '#tra-cu',
   },
   {
     id: 'qua-tang', 
     title: 'Hộp Quà ChuLeaf',
     description: 'Gói trọn tâm tình trong từng hộp quà biếu tặng.',
-    image: 'https://images.unsplash.com/photo-1597481499750-3e6b22637e12?q=80&w=800&auto=format&fit=crop',
+    image: '/images/qua-tang.jpg',
     link: '#qua-tang',
+  },
+];
+
+// --- TEA EXPERIENCE FEATURES (For Tiệc Trà & Khóa Học Page) ---
+export const TEA_EXPERIENCE_FEATURES = [
+  {
+    id: 'workshop',
+    title: 'Workshop',
+    description: 'Tham gia các buổi workshop trực tiếp với nghệ nhân trà, học cách pha trà và thưởng thức trà đúng điệu.',
+    image: '/images/tiec-tra-khoa-hoc.jpg',
+    link: '#workshop',
+    cta: 'Đến Workshop',
+  },
+  {
+    id: 'tiec-tra',
+    title: 'Tiệc Trà',
+    description: 'Dịch vụ tiệc trà trọn gói cho sự kiện của bạn, mang đến không gian trà đạo đẳng cấp và chuyên nghiệp.',
+    image: 'https://images.unsplash.com/photo-1555529733-0e670560f7e1?q=80&w=800&auto=format&fit=crop',
+    link: '#tiec-tra-service',
+    cta: 'Khám Phá Tiệc Trà',
+  },
+  {
+    id: 'khoa-hoc-online',
+    title: 'Khóa Học Online',
+    description: 'Học cách pha trà và thưởng trà đúng điệu mọi lúc mọi nơi với khóa học trà online linh hoạt.',
+    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop',
+    link: '#khoa-hoc-online',
+    cta: 'Tham Gia Ngay',
   },
 ];
 

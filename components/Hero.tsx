@@ -10,7 +10,7 @@ export const Hero: React.FC = () => {
         className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transform scale-105 animate-slow-zoom"
         style={{ 
           // Using a new reliable Unsplash ID for "Tea with mountain view" vibe
-          backgroundImage: "url('https://images.unsplash.com/photo-1522747776116-64ee03be1dad?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?q=80&w=2500&auto=format&fit=crop')"
+          backgroundImage: "url('images/hero4.jpg')"
         }}
       >
         {/* Gradient Overlay */}

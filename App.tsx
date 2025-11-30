@@ -20,8 +20,12 @@ import { EmailPreferencesPage } from './components/EmailPreferencesPage';
 import { WorkshopPage } from './components/WorkshopPage';
 import { TeaPartyPage } from './components/TeaPartyPage';
 import { OnlineCoursePage } from './components/OnlineCoursePage';
+import { TeaExperiencePage } from './components/TeaExperiencePage';
+import { AdminAddProductPage } from './components/AdminAddProductPage';
 import { CATEGORY_DETAILS } from './constants';
+import { writeTestConnectionDocument } from './firebase';
 import { CartProvider } from './context/CartContext';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   const [route, setRoute] = useState(window.location.hash || '');
@@ -35,6 +39,11 @@ function App() {
 
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Gọi test ghi document Firestore khi app load lần đầu
+  useEffect(() => {
+    writeTestConnectionDocument();
   }, []);
 
   const renderContent = () => {
@@ -77,6 +86,10 @@ function App() {
         return <EmailPreferencesPage />;
     }
 
+    if (cleanPath === 'admin-add-product') {
+        return <AdminAddProductPage />;
+    }
+
     // 3. Specific Services Pages
     if (cleanPath === 'workshop') {
         return <WorkshopPage />;
@@ -88,6 +101,10 @@ function App() {
 
     if (cleanPath === 'khoa-hoc-online') {
         return <OnlineCoursePage />;
+    }
+
+    if (cleanPath === 'tiec-tra-khoa-hoc') {
+        return <TeaExperiencePage />;
     }
 
     // 4. Article Detail Page (Check prefix first)
@@ -124,16 +141,18 @@ function App() {
   };
 
   return (
-    <CartProvider>
-        <div className="min-h-screen bg-white font-sans text-stone-900 antialiased selection:bg-orange-200 selection:text-orange-900">
-        <Header />
-        <MiniCart />
-        <main>
-            {renderContent()}
-        </main>
-        <Footer />
-        </div>
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+          <div className="min-h-screen bg-white font-sans text-stone-900 antialiased selection:bg-orange-200 selection:text-orange-900">
+          <Header />
+          <MiniCart />
+          <main>
+              {renderContent()}
+          </main>
+          <Footer />
+          </div>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 

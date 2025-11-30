@@ -5,6 +5,9 @@ import { Button } from './Button';
 import { ALL_PRODUCTS, CATEGORY_DETAILS, TEA_TYPES_VISUALS } from '../constants';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
+import { db } from '../firebase';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { FORMAT_SUPPORTED_CATEGORIES, ORIGIN_SUPPORTED_CATEGORIES, FLAVOR_SUPPORTED_CATEGORIES, TEA_FORMATS, TEA_ORIGINS, FLAVOR_CATEGORIES, ALL_FLAVORS } from '../constants/filterOptions';
 
 interface CategoryPageProps {
   categoryId?: string;
@@ -13,11 +16,14 @@ interface CategoryPageProps {
 export const CategoryPage: React.FC<CategoryPageProps> = ({ categoryId = 'luc-tra' }) => {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const { addToCart } = useCart();
+  const [firestoreProducts, setFirestoreProducts] = useState<Product[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   
   // Filter States
   const [selectedOrigins, setSelectedOrigins] = useState<string[]>([]);
   const [selectedFormats, setSelectedFormats] = useState<string[]>([]);
   const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
+  const [selectedFlavors, setSelectedFlavors] = useState<string[]>([]);
 
   // Get Category Metadata with fallback
   const categoryInfo = CATEGORY_DETAILS[categoryId] || {
@@ -42,38 +48,137 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({ categoryId = 'luc-tr
     window.location.hash = `#${subCatId}`;
   };
 
+  // Load products from Firestore
+  useEffect(() => {
+    const loadFirestoreProducts = async () => {
+      setIsLoadingProducts(true);
+      try {
+        const productsRef = collection(db, 'products');
+        const snapshot = await getDocs(productsRef);
+        const products: Product[] = [];
+        
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          products.push({
+            id: doc.id,
+            name: data.name || '',
+            price: data.price || '',
+            image: data.image || '',
+            description: data.description,
+            categoryId: data.categoryId,
+            mainCategory: data.mainCategory,
+            tag: data.tag,
+            format: data.format,
+            origin: data.origin,
+            flavors: data.flavors || [],
+            rating: data.rating,
+          });
+        });
+        
+        setFirestoreProducts(products);
+      } catch (error) {
+        console.error('Lỗi khi tải sản phẩm từ Firestore:', error);
+      } finally {
+        setIsLoadingProducts(false);
+      }
+    };
+
+    loadFirestoreProducts();
+  }, []);
+
   // Reset filters when category changes
   useEffect(() => {
     setSelectedOrigins([]);
     setSelectedFormats([]);
     setSelectedPrices([]);
+    setSelectedFlavors([]);
     window.scrollTo(0, 0);
   }, [categoryId]);
 
+  // Combine products from constants and Firestore
+  const allProducts = useMemo(() => {
+    // Combine ALL_PRODUCTS from constants with Firestore products
+    // Firestore products will override constants if same ID (but unlikely)
+    const combined = [...ALL_PRODUCTS];
+    
+    // Add Firestore products that don't exist in constants
+    firestoreProducts.forEach(fsProduct => {
+      if (!combined.find(p => p.id === fsProduct.id)) {
+        combined.push(fsProduct);
+      }
+    });
+    
+    return combined;
+  }, [firestoreProducts]);
+
   // Derived filtered products
   const filteredProducts = useMemo(() => {
-    if (!ALL_PRODUCTS) return [];
+    if (!allProducts || allProducts.length === 0) return [];
 
-    return ALL_PRODUCTS.filter(product => {
+    return allProducts.filter(product => {
       // 1. Filter by Category
-      // If we are on the main "Trà Nguyên Bản" page (tra-nguyen-ban), we want to show products 
-      // from ALL sub-categories (luc-tra, bach-tra, etc.) OR just filter by that overarching ID if you tagged them.
-      // Current data structure uses specific IDs (luc-tra, bach-tra) for products. 
-      // So if categoryId is 'tra-nguyen-ban', we should technically show ALL tea types.
+      // Check both mainCategory and categoryId
+      const productMainCategory = product.mainCategory || '';
+      const productCategoryId = product.categoryId || '';
       
-      const isTraNguyenBanParent = categoryId === 'tra-nguyen-ban';
-      const traNguyenBanSubIds = ['luc-tra', 'bach-tra', 'hoang-tra', 'o-long', 'pho-nhi', 'hong-tra'];
+      // If product has mainCategory, use it for filtering
+      if (productMainCategory) {
+        // Map of main categories to their sub-categories
+        const mainCategorySubs: Record<string, string[]> = {
+          'tra-nguyen-ban': ['luc-tra', 'bach-tra', 'hoang-tra', 'o-long', 'pho-nhi', 'hong-tra'],
+          'tra-uop-huong': ['tra-sen', 'tra-lai', 'tra-que'],
+          'qua-tang': ['qua-tet', 'combo-tra', 'qua-doanh-nghiep'],
+          'tra-cu': ['bo-tra', 'am-tra', 'chen-tra', 'chen-tong', 'tra-cu-khac'],
+          'tiec-tra': ['workshop', 'tiec-tra-service', 'khoa-hoc-online'],
+        };
 
-      if (isTraNguyenBanParent) {
-         if (!traNguyenBanSubIds.includes(product.categoryId || '')) return false;
+        // If on main category page (e.g., tra-nguyen-ban)
+        if (categoryId === productMainCategory) {
+          // Show all products with this mainCategory
+          return true;
+        }
+        
+        // If on sub-category page (e.g., luc-tra)
+        const subCategories = mainCategorySubs[productMainCategory] || [];
+        if (subCategories.includes(categoryId)) {
+          // Show products with matching categoryId
+          return productCategoryId === categoryId;
+        }
+        
+        // If categoryId matches mainCategory, show it
+        if (categoryId === productMainCategory) {
+          return true;
+        }
+        
+        // Otherwise, check if product's categoryId matches current page
+        if (productCategoryId === categoryId) {
+          return true;
+        }
+        
+        return false;
       } else {
-         if (product.categoryId !== categoryId) return false;
+        // Fallback: old logic for products without mainCategory
+        const isTraNguyenBanParent = categoryId === 'tra-nguyen-ban';
+        const traNguyenBanSubIds = ['luc-tra', 'bach-tra', 'hoang-tra', 'o-long', 'pho-nhi', 'hong-tra'];
+
+        if (isTraNguyenBanParent) {
+          if (!traNguyenBanSubIds.includes(productCategoryId) && productCategoryId !== 'tra-nguyen-ban') {
+            return false;
+          }
+        } else {
+          if (productCategoryId !== categoryId) return false;
+        }
       }
 
-      // 2. Filter by Origin (Mock logic: check if name contains origin)
+      // 2. Filter by Origin (use origin field if available, otherwise fallback to name check)
       if (selectedOrigins.length > 0) {
-        const matchesOrigin = selectedOrigins.some(origin => product.name.includes(origin));
-        if (!matchesOrigin) return false;
+        if (product.origin) {
+          if (!selectedOrigins.includes(product.origin)) return false;
+        } else {
+          // Fallback: check if name contains origin (for old products)
+          const matchesOrigin = selectedOrigins.some(origin => product.name.includes(origin));
+          if (!matchesOrigin) return false;
+        }
       }
 
       // 3. Filter by Format/Type
@@ -87,7 +192,7 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({ categoryId = 'luc-tr
             const priceVal = parseInt(product.price.replace(/\./g, '').replace(/\D/g, ''));
             const matchesPrice = selectedPrices.some(range => {
             if (range === 'low') return priceVal <= 200000;
-            if (range === 'mid') return priceVal > 200000 && priceVal <= 500000; // Increased range for furniture
+            if (range === 'mid') return priceVal > 200000 && priceVal <= 500000;
             if (range === 'high') return priceVal > 500000;
             return false;
             });
@@ -97,20 +202,36 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({ categoryId = 'luc-tr
         }
       }
 
+      // 5. Filter by Origin (for Trà Nguyên Bản and Trà Ướp Hương)
+      if (selectedOrigins.length > 0) {
+        if (!product.origin || !selectedOrigins.includes(product.origin)) return false;
+      }
+
+      // 6. Filter by Flavors (for Trà Nguyên Bản and Trà Ướp Hương)
+      if (selectedFlavors.length > 0) {
+        if (!product.flavors || product.flavors.length === 0) return false;
+        // Product must have at least one of the selected flavors
+        const hasMatchingFlavor = selectedFlavors.some(flavor => product.flavors?.includes(flavor));
+        if (!hasMatchingFlavor) return false;
+      }
+
       return true;
     });
-  }, [categoryId, selectedOrigins, selectedFormats, selectedPrices]);
+  }, [categoryId, selectedOrigins, selectedFormats, selectedPrices, selectedFlavors]);
 
   // Dynamic available formats based on current category products
   const availableFormats = useMemo(() => {
     const formats = new Set<string>();
-    ALL_PRODUCTS.forEach(p => {
+    allProducts.forEach(p => {
         // Similar logic for Parent category check
         const isTraNguyenBanParent = categoryId === 'tra-nguyen-ban';
         const traNguyenBanSubIds = ['luc-tra', 'bach-tra', 'hoang-tra', 'o-long', 'pho-nhi', 'hong-tra'];
+        const productCategoryId = p.categoryId || '';
         
         if (isTraNguyenBanParent) {
-             if (traNguyenBanSubIds.includes(p.categoryId || '') && p.format) formats.add(p.format);
+             if ((traNguyenBanSubIds.includes(productCategoryId) || productCategoryId === 'tra-nguyen-ban') && p.format) {
+               formats.add(p.format);
+             }
         } else {
              if (p.categoryId === categoryId && p.format) formats.add(p.format);
         }
@@ -118,7 +239,19 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({ categoryId = 'luc-tr
     // Fallback default list if empty (visual consistency)
     if (formats.size === 0) return ['Lá rời', 'Túi lọc', 'Bánh', 'Viên', 'Hộp quà', 'Tử Sa', 'Gốm', 'Sứ'];
     return Array.from(formats);
-  }, [categoryId]);
+  }, [categoryId, allProducts]);
+
+  // Check if should show tea-specific filters (Origin, Format, Flavor)
+  const showTeaFilters = useMemo(() => {
+    if (categoryId === 'tra-nguyen-ban' || categoryId === 'tra-uop-huong') {
+      return true;
+    }
+    // Check if any products in current category are tea products
+    return allProducts.some(p => 
+      (p.mainCategory === 'tra-nguyen-ban' || p.mainCategory === 'tra-uop-huong') && 
+      (p.categoryId === categoryId || categoryId === 'tra-nguyen-ban')
+    );
+  }, [categoryId, allProducts]);
 
   const toggleFilter = (setter: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
     setter(prev => prev.includes(value) ? prev.filter(item => item !== value) : [...prev, value]);
@@ -277,41 +410,92 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({ categoryId = 'luc-tr
             </div>
 
             <div className="space-y-8 pr-4">
-              {/* Origin Filter - Only show if relevant (has matching products with these names) or keep as standard */}
-              <div>
-                <h3 className="font-bold text-stone-900 mb-4 text-xs uppercase tracking-widest border-b border-stone-100 pb-2">Xuất Xứ</h3>
-                <div className="space-y-3">
-                  {['Thái Nguyên', 'Tà Xùa', 'Hà Giang', 'Lâm Đồng', 'Nghi Hưng', 'Bát Tràng'].map(origin => (
-                    <label key={origin} className="flex items-center gap-3 cursor-pointer group">
-                      <input 
-                        type="checkbox" 
-                        checked={selectedOrigins.includes(origin)}
-                        onChange={() => toggleFilter(setSelectedOrigins, origin)}
-                        className="w-4 h-4 rounded border-stone-300 text-rust-500 focus:ring-rust-500 cursor-pointer" 
-                      />
-                      <span className="text-stone-600 text-sm group-hover:text-rust-600 transition-colors">{origin}</span>
-                    </label>
-                  ))}
+              {/* Origin Filter - Only for Trà Nguyên Bản and Trà Ướp Hương */}
+              {showTeaFilters && (
+                <div>
+                  <h3 className="font-bold text-stone-900 mb-4 text-xs uppercase tracking-widest border-b border-stone-100 pb-2">Xuất Xứ</h3>
+                  <div className="space-y-3">
+                    {TEA_ORIGINS.map(origin => (
+                      <label key={origin} className="flex items-center gap-3 cursor-pointer group">
+                        <input 
+                          type="checkbox" 
+                          checked={selectedOrigins.includes(origin)}
+                          onChange={() => toggleFilter(setSelectedOrigins, origin)}
+                          className="w-4 h-4 rounded border-stone-300 text-rust-500 focus:ring-rust-500 cursor-pointer" 
+                        />
+                        <span className="text-stone-600 text-sm group-hover:text-rust-600 transition-colors">{origin}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Format/Type Filter - Dynamically populated or Static list */}
-              <div>
-                <h3 className="font-bold text-stone-900 mb-4 text-xs uppercase tracking-widest border-b border-stone-100 pb-2">Phân Loại</h3>
-                <div className="space-y-3">
-                  {availableFormats.map(val => (
-                    <label key={val} className="flex items-center gap-3 cursor-pointer group">
-                      <input 
-                        type="checkbox" 
-                        checked={selectedFormats.includes(val)}
-                        onChange={() => toggleFilter(setSelectedFormats, val)}
-                        className="w-4 h-4 rounded border-stone-300 text-rust-500 focus:ring-rust-500 cursor-pointer" 
-                      />
-                      <span className="text-stone-600 text-sm group-hover:text-rust-600 transition-colors">{val}</span>
-                    </label>
-                  ))}
+              {/* Format/Type Filter - Only for Trà Nguyên Bản and Trà Ướp Hương */}
+              {showTeaFilters && (
+                <div>
+                  <h3 className="font-bold text-stone-900 mb-4 text-xs uppercase tracking-widest border-b border-stone-100 pb-2">Format</h3>
+                  <div className="space-y-3">
+                    {TEA_FORMATS.map(format => (
+                      <label key={format} className="flex items-center gap-3 cursor-pointer group">
+                        <input 
+                          type="checkbox" 
+                          checked={selectedFormats.includes(format)}
+                          onChange={() => toggleFilter(setSelectedFormats, format)}
+                          className="w-4 h-4 rounded border-stone-300 text-rust-500 focus:ring-rust-500 cursor-pointer" 
+                        />
+                        <span className="text-stone-600 text-sm group-hover:text-rust-600 transition-colors">{format}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Format Filter for other categories (if they have format) */}
+              {!(categoryId === 'tra-nguyen-ban' || categoryId === 'tra-uop-huong') && availableFormats.length > 0 && (
+                <div>
+                  <h3 className="font-bold text-stone-900 mb-4 text-xs uppercase tracking-widest border-b border-stone-100 pb-2">Phân Loại</h3>
+                  <div className="space-y-3">
+                    {availableFormats.map(val => (
+                      <label key={val} className="flex items-center gap-3 cursor-pointer group">
+                        <input 
+                          type="checkbox" 
+                          checked={selectedFormats.includes(val)}
+                          onChange={() => toggleFilter(setSelectedFormats, val)}
+                          className="w-4 h-4 rounded border-stone-300 text-rust-500 focus:ring-rust-500 cursor-pointer" 
+                        />
+                        <span className="text-stone-600 text-sm group-hover:text-rust-600 transition-colors">{val}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Flavor Filter - Only for Trà Nguyên Bản and Trà Ướp Hương */}
+              {showTeaFilters && (
+                <div>
+                  <h3 className="font-bold text-stone-900 mb-4 text-xs uppercase tracking-widest border-b border-stone-100 pb-2">Hương Vị</h3>
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {Object.entries(FLAVOR_CATEGORIES).map(([key, category]) => (
+                      <div key={key} className="space-y-2">
+                        <h4 className="font-medium text-stone-700 text-xs">{category.label}</h4>
+                        <div className="space-y-2">
+                          {category.options.map(flavor => (
+                            <label key={flavor} className="flex items-center gap-2 cursor-pointer group">
+                              <input 
+                                type="checkbox" 
+                                checked={selectedFlavors.includes(flavor)}
+                                onChange={() => toggleFilter(setSelectedFlavors, flavor)}
+                                className="w-4 h-4 rounded border-stone-300 text-rust-500 focus:ring-rust-500 cursor-pointer" 
+                              />
+                              <span className="text-stone-600 text-xs group-hover:text-rust-600 transition-colors">{flavor}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Price Filter */}
               <div>
@@ -350,7 +534,12 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({ categoryId = 'luc-tr
                     </div>
                     <h3 className="text-xl text-stone-800 font-light mb-2">Không tìm thấy sản phẩm</h3>
                     <p className="text-stone-500 text-sm mb-6">Hãy thử bỏ bớt bộ lọc để xem nhiều kết quả hơn.</p>
-                    <Button variant="outline" size="sm" onClick={() => {setSelectedOrigins([]); setSelectedFormats([]); setSelectedPrices([]);}}>
+                    <Button variant="outline" size="sm" onClick={() => {
+                      setSelectedOrigins([]); 
+                      setSelectedFormats([]); 
+                      setSelectedPrices([]);
+                      setSelectedFlavors([]);
+                    }}>
                         Xóa bộ lọc
                     </Button>
                 </div>

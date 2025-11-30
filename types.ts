@@ -8,7 +8,11 @@ export interface Product {
   tag?: string;
   rating?: number;
   format?: string; // Changed to string to support non-tea formats like 'Gốm', 'Gỗ'
-  categoryId?: string; // To link product to a specific category page
+  categoryId?: string; // To link product to a specific category page (sub-category)
+  mainCategory?: string; // Main category: 'tra-nguyen-ban', 'tra-uop-huong', 'qua-tang', 'tra-cu', 'tiec-tra'
+  origin?: string; // Xuất xứ: 'Thái Nguyên', 'Mộc Châu', 'Tà Xùa', 'Hà Giang', etc.
+  flavors?: string[]; // Hương vị: array of flavor strings
+  description?: string;
 }
 
 export interface Category {
@@ -63,4 +67,13 @@ export interface CartContextType {
   closeMiniCart: () => void;
   cartTotal: number;
   cartCount: number;
+}
+
+// --- AUTH TYPES ---
+import { User } from 'firebase/auth';
+
+export interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  signOut: () => Promise<void>;
 }

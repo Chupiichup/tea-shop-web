@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Check, ChevronDown } from 'lucide-react';
 import { Button } from './Button';
+import { auth } from '../firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 export const RegisterPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +35,7 @@ export const RegisterPage: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.termsConsent) {
         alert("Vui lòng đồng ý với Điều khoản và Chính sách bảo mật.");
@@ -41,12 +43,31 @@ export const RegisterPage: React.FC = () => {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      alert("Đăng ký thành công! (Demo)");
+    
+    try {
+      // Tạo tài khoản với Firebase Auth
+      await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      
+      // Đăng ký thành công
+      alert("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.");
       window.location.hash = '#login';
-    }, 1500);
+    } catch (error: any) {
+      // Xử lý lỗi
+      let errorMessage = "Đã xảy ra lỗi khi đăng ký. Vui lòng thử lại.";
+      
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = "Email này đã được sử dụng. Vui lòng dùng email khác hoặc đăng nhập.";
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = "Email không hợp lệ. Vui lòng kiểm tra lại.";
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = "Mật khẩu quá yếu. Vui lòng tạo mật khẩu mạnh hơn (ít nhất 6 ký tự).";
+      }
+      
+      alert(errorMessage);
+      console.error("Lỗi đăng ký:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Generate Date Options
