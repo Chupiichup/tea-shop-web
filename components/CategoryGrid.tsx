@@ -16,7 +16,7 @@ export const CategoryGrid: React.FC = () => {
              <h2 className="text-3xl md:text-5xl font-light text-stone-900 tracking-tight">Khám Phá Thế Giới Trà</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {CATEGORIES.map((category) => (
             <div 
               key={category.id} 

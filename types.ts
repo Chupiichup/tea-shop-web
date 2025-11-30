@@ -1,18 +1,58 @@
 import React from 'react';
 
+export interface ProductSize {
+  id: string;
+  name: string;
+  weight: string;
+  price: string;
+  image?: string;
+}
+
+export interface ProductVariant {
+  id: string;
+  name: string;
+  color?: string;
+  price: string;
+  image?: string;
+}
+
+export interface BrewingGuide {
+  quantity: string;
+  temperature: string;
+  time: string;
+  hot?: string; // Instructions for hot tea
+  iced?: string; // Instructions for iced tea
+}
+
+export interface ProductReview {
+  id: string;
+  user: string;
+  rating: number;
+  comment: string;
+  date: string;
+}
+
 export interface Product {
   id: string;
   name: string;
   price: string;
   image: string;
+  imageHover?: string; // Second image that shows on hover (optional)
+  images?: string[]; // Array of images for product detail gallery
   tag?: string;
   rating?: number;
   format?: string; // Changed to string to support non-tea formats like 'Gốm', 'Gỗ'
-  categoryId?: string; // To link product to a specific category page (sub-category)
-  mainCategory?: string; // Main category: 'tra-nguyen-ban', 'tra-uop-huong', 'qua-tang', 'tra-cu', 'tiec-tra'
-  origin?: string; // Xuất xứ: 'Thái Nguyên', 'Mộc Châu', 'Tà Xùa', 'Hà Giang', etc.
-  flavors?: string[]; // Hương vị: array of flavor strings
-  description?: string;
+  categoryId?: string; // DEPRECATED: Use categoryIds instead. Kept for backward compatibility
+  categoryIds?: string[]; // Array of category IDs - allows product to belong to multiple categories
+  sku?: string; // Product SKU/item number
+  sizes?: ProductSize[]; // Size options for tea products
+  variants?: ProductVariant[]; // Color/variant options for teaware products
+  ingredients?: string; // Ingredients list
+  brewingGuide?: BrewingGuide; // Brewing instructions
+  material?: string; // Material information (for teaware)
+  capacity?: string; // Capacity information (for teaware)
+  reviews?: ProductReview[]; // Product reviews
+  description?: string; // Full product description
 }
 
 export interface Category {
@@ -67,13 +107,4 @@ export interface CartContextType {
   closeMiniCart: () => void;
   cartTotal: number;
   cartCount: number;
-}
-
-// --- AUTH TYPES ---
-import { User } from 'firebase/auth';
-
-export interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  signOut: () => Promise<void>;
 }

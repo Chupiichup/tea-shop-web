@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Check, ChevronDown } from 'lucide-react';
+import { Eye, EyeOff, Check, ChevronDown, AlertCircle } from 'lucide-react';
 import { Button } from './Button';
 import { auth } from '../firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
@@ -20,6 +20,7 @@ export const RegisterPage: React.FC = () => {
     termsConsent: false
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -33,37 +34,37 @@ export const RegisterPage: React.FC = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    // Clear error when user starts typing
+    if (error) setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.termsConsent) {
-        alert("Vui lòng đồng ý với Điều khoản và Chính sách bảo mật.");
+        setError("Vui lòng đồng ý với Điều khoản và Chính sách bảo mật.");
         return;
     }
 
     setIsLoading(true);
-    
+    setError(null);
+
     try {
-      // Tạo tài khoản với Firebase Auth
       await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      
-      // Đăng ký thành công
+      // Success - user is now logged in
       alert("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.");
       window.location.hash = '#login';
     } catch (error: any) {
-      // Xử lý lỗi
       let errorMessage = "Đã xảy ra lỗi khi đăng ký. Vui lòng thử lại.";
-      
       if (error.code === 'auth/email-already-in-use') {
         errorMessage = "Email này đã được sử dụng. Vui lòng dùng email khác hoặc đăng nhập.";
       } else if (error.code === 'auth/invalid-email') {
         errorMessage = "Email không hợp lệ. Vui lòng kiểm tra lại.";
       } else if (error.code === 'auth/weak-password') {
         errorMessage = "Mật khẩu quá yếu. Vui lòng tạo mật khẩu mạnh hơn (ít nhất 6 ký tự).";
+      } else if (error.code === 'auth/operation-not-allowed') {
+        errorMessage = "Tính năng đăng ký tạm thời không khả dụng. Vui lòng thử lại sau.";
       }
-      
-      alert(errorMessage);
+      setError(errorMessage);
       console.error("Lỗi đăng ký:", error);
     } finally {
       setIsLoading(false);
@@ -265,12 +266,28 @@ export const RegisterPage: React.FC = () => {
                     </label>
                 </div>
 
+                {/* Error Message */}
+                {error && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                    <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm text-red-800 font-medium">{error}</p>
+                    </div>
+                    <button
+                      onClick={() => setError(null)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <span className="text-lg">×</span>
+                    </button>
+                  </div>
+                )}
+
                 <div className="pt-6">
                     <Button 
                         type="submit" 
                         fullWidth 
                         disabled={isLoading}
-                        className="bg-stone-900 hover:bg-stone-800 text-white font-bold py-4 text-base rounded-lg shadow-xl"
+                        className="bg-stone-900 hover:bg-stone-800 text-white font-bold py-4 text-base rounded-lg shadow-xl disabled:opacity-50"
                     >
                         {isLoading ? 'Đang tạo tài khoản...' : 'Đăng ký ngay'}
                     </Button>

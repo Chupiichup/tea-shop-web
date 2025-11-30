@@ -1,46 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Gift, Package, Heart, Mail, User, X, ArrowRight } from 'lucide-react';
 import { Button } from './Button';
 import { formatPrice } from '../utils';
-import { useAuth } from '../context/AuthContext';
 
 export const AccountDashboard: React.FC = () => {
-  const { user, loading, signOut } = useAuth();
   const [showBirthdayBanner, setShowBirthdayBanner] = useState(true);
-
-  useEffect(() => {
-    // Bảo vệ route: nếu chưa đăng nhập thì redirect về login
-    if (!loading && !user) {
-      window.location.hash = '#login';
-    }
-  }, [user, loading]);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      window.location.hash = '#login';
-    } catch (error) {
-      console.error('Lỗi khi đăng xuất:', error);
-      alert('Đã xảy ra lỗi khi đăng xuất. Vui lòng thử lại.');
-    }
-  };
-
-  // Hiển thị loading hoặc không hiển thị gì nếu chưa đăng nhập
-  if (loading) {
-    return (
-      <div className="bg-white min-h-screen pt-[80px] flex items-center justify-center">
-        <p className="text-stone-500">Đang tải...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null; // Sẽ redirect trong useEffect
-  }
-
-  // Lấy tên từ email (phần trước @) hoặc displayName
-  const displayName = user.displayName || user.email?.split('@')[0] || 'Thành viên';
 
   const mockWishlist = [
     {
@@ -74,7 +39,7 @@ export const AccountDashboard: React.FC = () => {
              </div>
              
              <h1 className="text-4xl md:text-5xl font-bold mb-2">
-                 Hello <span className="text-rust-500">{displayName}</span>
+                 Hello <span className="text-rust-500">Thao</span>
              </h1>
              <p className="text-stone-300 text-lg font-light">Manage your Tea Society membership</p>
          </div>
@@ -169,8 +134,8 @@ export const AccountDashboard: React.FC = () => {
               </div>
               
               <div className="text-center pt-8">
-                  <button onClick={handleSignOut} className="text-stone-500 hover:text-rust-600 font-medium underline text-sm">
-                      Đăng xuất
+                  <button onClick={() => window.location.hash = '#login'} className="text-stone-500 hover:text-rust-600 font-medium underline text-sm">
+                      Log out
                   </button>
               </div>
 

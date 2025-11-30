@@ -1,41 +1,39 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import { auth } from '../firebase';
-import { AuthContextType } from '../types';
+
+interface AuthContextType {
+  user: User | null;
+  isLoading: boolean;
+  signOut: () => Promise<void>;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Lắng nghe thay đổi trạng thái đăng nhập
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      setLoading(false);
+      setIsLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
+      window.location.hash = '#login';
     } catch (error) {
-      console.error('Lỗi khi đăng xuất:', error);
-      throw error;
+      console.error("Error signing out:", error);
+      alert("Đã xảy ra lỗi khi đăng xuất. Vui lòng thử lại.");
     }
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        signOut,
-      }}
-    >
+    <AuthContext.Provider value={{ user, isLoading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
@@ -48,5 +46,4 @@ export const useAuth = () => {
   }
   return context;
 };
-
 

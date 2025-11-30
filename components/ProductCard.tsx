@@ -16,14 +16,32 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       addToCart(product);
   };
 
+  const handleCardClick = () => {
+    window.location.hash = `#product/${product.id}`;
+  };
+
   return (
-    <div className="group relative flex flex-col h-full bg-white rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-xl hover:shadow-stone-200/50 border border-stone-100">
+    <div 
+      className="group relative flex flex-col h-full bg-white rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-xl hover:shadow-stone-200/50 border border-stone-100 cursor-pointer"
+      onClick={handleCardClick}
+    >
       <div className="relative aspect-[4/5] overflow-hidden bg-stone-50">
+        {/* Main Image */}
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          className={`w-full h-full object-cover transition-opacity duration-500 ease-in-out ${
+            product.imageHover ? 'group-hover:opacity-0' : 'group-hover:scale-105'
+          }`}
         />
+        {/* Hover Image - Only show if imageHover exists */}
+        {product.imageHover && (
+          <img
+            src={product.imageHover}
+            alt={product.name}
+            className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"
+          />
+        )}
         
         {product.tag && (
           <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-stone-800 text-[10px] font-bold uppercase px-3 py-1.5 rounded-full tracking-wider shadow-sm z-10">
@@ -45,7 +63,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       
       <div className="p-5 flex-grow flex flex-col">
         <div className="flex items-start justify-between mb-2">
-            <h3 className="text-stone-800 font-medium text-lg group-hover:text-rust-600 transition-colors">
+            <h3 className="text-stone-800 font-medium text-lg group-hover:text-rust-600 transition-colors cursor-pointer">
             {product.name}
             </h3>
         </div>

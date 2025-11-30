@@ -50,14 +50,16 @@ export const SearchPage: React.FC = () => {
     return ALL_PRODUCTS.filter(product => {
         const normalizedName = normalizeText(product.name);
         const normalizedTag = product.tag ? normalizeText(product.tag) : '';
-        const normalizedCat = product.categoryId ? normalizeText(product.categoryId) : '';
+        // Support both categoryIds (array) and categoryId (string) for backward compatibility
+        const productCategoryIds = product.categoryIds || (product.categoryId ? [product.categoryId] : []);
+        const normalizedCats = productCategoryIds.map(id => normalizeText(id)).join(' ');
         const normalizedFormat = product.format ? normalizeText(product.format) : '';
 
         // Match if ALL search terms are present in ANY of the fields
         return searchTerms.every(term => 
             normalizedName.includes(term) || 
             normalizedTag.includes(term) || 
-            normalizedCat.includes(term) ||
+            normalizedCats.includes(term) ||
             normalizedFormat.includes(term)
         );
     });

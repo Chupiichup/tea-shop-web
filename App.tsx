@@ -20,10 +20,9 @@ import { EmailPreferencesPage } from './components/EmailPreferencesPage';
 import { WorkshopPage } from './components/WorkshopPage';
 import { TeaPartyPage } from './components/TeaPartyPage';
 import { OnlineCoursePage } from './components/OnlineCoursePage';
-import { TeaExperiencePage } from './components/TeaExperiencePage';
 import { AdminAddProductPage } from './components/AdminAddProductPage';
+import { ProductDetailPage } from './components/ProductDetailPage';
 import { CATEGORY_DETAILS } from './constants';
-import { writeTestConnectionDocument } from './firebase';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 
@@ -39,11 +38,6 @@ function App() {
 
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
-
-  // Gọi test ghi document Firestore khi app load lần đầu
-  useEffect(() => {
-    writeTestConnectionDocument();
   }, []);
 
   const renderContent = () => {
@@ -70,6 +64,11 @@ function App() {
         return <RegisterPage />;
     }
 
+    // Admin page - check early to avoid conflicts
+    if (cleanPath === 'admin-add-product') {
+        return <AdminAddProductPage />;
+    }
+
     if (cleanPath === 'account' || cleanPath === 'tai-khoan') {
         return <AccountDashboard />;
     }
@@ -86,10 +85,6 @@ function App() {
         return <EmailPreferencesPage />;
     }
 
-    if (cleanPath === 'admin-add-product') {
-        return <AdminAddProductPage />;
-    }
-
     // 3. Specific Services Pages
     if (cleanPath === 'workshop') {
         return <WorkshopPage />;
@@ -103,27 +98,29 @@ function App() {
         return <OnlineCoursePage />;
     }
 
-    if (cleanPath === 'tiec-tra-khoa-hoc') {
-        return <TeaExperiencePage />;
+    // 4. Product Detail Page (Check prefix first)
+    if (cleanPath.startsWith('product/')) {
+        const productId = cleanPath.split('product/')[1];
+        return <ProductDetailPage productId={productId} />;
     }
 
-    // 4. Article Detail Page (Check prefix first)
+    // 5. Article Detail Page (Check prefix first)
     if (cleanPath.startsWith('article/')) {
         const articleId = cleanPath.split('article/')[1];
         return <ArticleDetailPage articleId={articleId} />;
     }
 
-    // 5. Blog Landing Pages
+    // 6. Blog Landing Pages
     if (cleanPath === 'cach-pha-tra' || cleanPath === 'chuyen-tra') {
         return <ArticleLandingPage categoryId={cleanPath} />;
     }
 
-    // 6. Product Categories
+    // 7. Product Categories
     if (cleanPath in CATEGORY_DETAILS) {
       return <CategoryPage categoryId={cleanPath} />;
     }
     
-    // 7. Static Pages
+    // 8. Static Pages
     if (cleanPath === 've-chung-toi' || cleanPath === 'gioi-thieu') {
         return <AboutPage />;
     }
@@ -136,7 +133,7 @@ function App() {
         return <div className="pt-32 text-center min-h-[50vh]"><h1 className="text-3xl font-light">Trang này đang được xây dựng</h1></div>;
     }
 
-    // 8. Default to Home
+    // 9. Default to Home
     return <HomePage />;
   };
 
